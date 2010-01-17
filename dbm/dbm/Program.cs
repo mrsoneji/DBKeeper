@@ -29,7 +29,12 @@ namespace dbm
                         core.createrepo();
                         break;
                     case "log":
-                        core.viewlog(args[1]);
+						if (args.Length > 1)
+						{
+	                        core.viewlog(args[1]);
+						} else {
+	                        core.viewlog();
+						}
 						break;
                     case "tag":
 						// if exists parameter args[2] the user is trying to add a file into a tag create a new tag
@@ -51,7 +56,7 @@ namespace dbm
                         break;
 				default:
 		                Console.WriteLine("need to specify parameters");
-		                Console.WriteLine("dbm.exe [commit|init|log|tag] {filename}");
+		                Console.WriteLine("dbm.exe [commit|init|log|tag|forcecommit] {filename}");
 		                Console.WriteLine("     commit:              commit a file");
 		                Console.WriteLine("     init:                 init a repository");
 		                Console.WriteLine("     log:              show the commits log for the file or the entire latest version");

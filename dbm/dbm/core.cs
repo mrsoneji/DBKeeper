@@ -98,6 +98,38 @@ namespace dbm
 
 		public static void viewlog()
 		{
+//            filename = file;
+            //filename_sha1 = sha1.GetSHA1(filename.ToLower());
+
+            Console.Write("> Repository revisions log\n");
+            Console.Write("\n"); 
+
+			// get list of files in repo
+			foreach (string f in System.IO.Directory.GetDirectories(@".dbm/.objs"))
+			{
+				string[] filename_splitted = f.Split('/');
+	            filename = filename_splitted[filename_splitted.Length - 1];
+    	        filename_sha1 = filename;
+				
+				string[] revisionsfile = System.IO.Directory.GetFiles(@".dbm/.info/" + filename_sha1, @"*." + (int.Parse(getlastrevisionfromfile()) - 1));
+				info_file info = getinfofromfile(revisionsfile[0]);
+				Console.Write(info.RealFileName + ";" + "NIY" + ";" + info.UserName + ";" + info.Machine + ";" + tools.ConvertToUnixTimestamp(info.Date) + ";" + info.Revision.ToString() + "\n");
+			}
+			
+			/*
+			foreach (info_file info in revisions)
+			{
+				Console.Write("Filename: "); Console.Write(info.RealFileName + "\n");
+				Console.Write("Type: NIY\n");
+				Console.Write("Author: "); Console.Write(info.UserName + " (" + info.Machine + ")\n");
+				Console.Write("Date: "); Console.Write(info.Date.ToLongDateString() + " " + info.Date.ToLongTimeString() + "\n");
+				Console.Write("Revision: "); Console.Write(info.Revision.ToString() + "\n");
+				Console.Write("\n");		
+			}
+			*/
+			
+			Console.Write("\n");	
+            Console.Write("...done\n");			
 		}
 			
         public static string getlastrevisionfromfile()
