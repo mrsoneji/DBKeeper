@@ -7,31 +7,60 @@ namespace dbm
 {
     class Program
     {
+		static bool BusOutput;
+		static List<string> ProcessArgs(string[] args)
+		{
+			List<string> tmp = new List<string>();
+			
+			foreach (string s in args) { 
+				if (s == "--busoutput") { 
+					BusOutput = true; 
+				} else if (s == "--otheroption") {
+				} else if (s.StartsWith(@"--")) {
+					Console.WriteLine(@"ERROR: Option " + s + " doesn't exists.\n");
+					return null;
+				} else {
+					tmp.Add(s);
+				}
+			}
+
+			return tmp;
+		}
+
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to dbm (database management) v1.0");
-            Console.WriteLine("");
-            Console.WriteLine("Author: Sebastián Pucheta");
-            Console.WriteLine("Maintainers: Leandro Ascaino, Sebastián Pucheta");
-            Console.WriteLine("");
-
-            if (args.Length > 0)
+			List<string> arg = ProcessArgs(args);
+			
+			if (arg == null) { return; }
+			
+			core.Bus_Output = BusOutput;
+			
+			if (!BusOutput)
+			{
+	            Console.WriteLine("Welcome to dbm (database management) v1.0");
+	            Console.WriteLine("");
+	            Console.WriteLine("Author: Sebastián Pucheta");
+	            Console.WriteLine("Maintainers: Leandro Ascaino, Sebastián Pucheta");
+	            Console.WriteLine("");
+			}
+			
+            if (arg.Count > 0)
             {
-                switch (args[0].ToLower())
+                switch (arg[0].ToLower())
                 {
                     case "commit":
-                        core.begin(args[1]);
+                        core.begin(arg[1]);
                         break;
                     case "forcecommit":
-                        core.begin(args[1], true);
+                        core.begin(arg[1], true);
                         break;
                     case "init":
                         core.createrepo();
                         break;
                     case "log":
-						if (args.Length > 1)
+						if (arg.Count > 1)
 						{
-	                        core.viewlog(args[1]);
+	                        core.viewlog(arg[1]);
 						} else {
 	                        core.viewlog();
 						}
@@ -55,6 +84,8 @@ namespace dbm
 						}						
                         break;
 				default:
+					if (!BusOutput)
+					{
 		                Console.WriteLine("need to specify parameters");
 		                Console.WriteLine("dbm.exe [commit|init|log|tag|forcecommit] {filename}");
 		                Console.WriteLine("     commit:              commit a file");
@@ -62,20 +93,25 @@ namespace dbm
 		                Console.WriteLine("     log:              show the commits log for the file or the entire latest version");
 		                
 		                Console.WriteLine("     file:           filename to commit");
-						break;
+
+					}
+					break;					
                 }
             }
             else
             {
-                Console.WriteLine("need to specify parameters");
-                Console.WriteLine("dbm.exe [commit|init|log|tag] {filename}");
-                Console.WriteLine("     commit:              commit a file");
-                Console.WriteLine("     init:                 init a repository");
-                Console.WriteLine("     log:              show the commits log for the file or the entire latest version");
-                
-                Console.WriteLine("     file:           filename to commit");
+				if (!BusOutput)
+				{				
+	                Console.WriteLine("need to specify parameters");
+	                Console.WriteLine("dbm.exe [commit|init|log|tag] {filename}");
+	                Console.WriteLine("     commit:              commit a file");
+	                Console.WriteLine("     init:                 init a repository");
+	                Console.WriteLine("     log:              show the commits log for the file or the entire latest version");
+	                
+	                Console.WriteLine("     file:           filename to commit");
+				}
             }
-			Console.WriteLine("");
+			// Console.WriteLine("");
         }
     }
 }

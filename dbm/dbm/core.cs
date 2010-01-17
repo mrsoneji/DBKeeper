@@ -11,6 +11,12 @@ namespace dbm
         static string filename_sha1;
         static string sha1sum;
 		static bool force_commit;
+		static bool bus_output;
+		
+		public static bool Bus_Output
+		{
+			set { bus_output = value; }
+		}
 		
 		public static void begin(string file) { begin(file, false); }
         public static void begin(string file, bool forcecommit)
@@ -65,9 +71,12 @@ namespace dbm
             filename = file;
             filename_sha1 = sha1.GetSHA1(filename.ToLower());
 
-            Console.Write("> File revisions log: " + file + "\n");
-            Console.Write("\n"); 
-
+			if (!bus_output)
+			{
+            	Console.Write("> File revisions log: " + file + "\n");
+            	Console.Write("\n"); 
+			}
+			
 			// get list of revisions and sort by Revision
 			info_file_list revisions = new info_file_list();
 			string[] revisionsfile = System.IO.Directory.GetFiles(@".dbm/.info/" + filename_sha1);
@@ -76,60 +85,80 @@ namespace dbm
 				info_file info = getinfofromfile(s); revisions.Add(info);
 			}
 			revisions.Sort();
-			
-			foreach (info_file info in revisions)
+
+			if (!bus_output)
 			{
-				Console.Write(info.RealFileName + ";" + "NIY" + ";" + info.UserName + ";" + info.Machine + ";" + tools.ConvertToUnixTimestamp(info.Date) + ";" + info.Revision.ToString() + "\n");
+				foreach (info_file info in revisions)
+				{
+					Console.Write("Filename: "); Console.Write(info.RealFileName + "\n");
+					Console.Write("Type: NIY\n");
+					
+					//TODO: verificar si se trata de un CREATE, ALTER o DROP
+					Console.Write("Author: "); Console.Write(info.UserName + " (" + info.Machine + ")\n");
+					Console.Write("Date: "); Console.Write(info.Date.ToLongDateString() + " " + info.Date.ToLongTimeString() + "\n");
+					Console.Write("Revision: "); Console.Write(info.Revision.ToString() + "\n");
+					Console.Write("Message: "); Console.Write(info.Message + "\n");
+					Console.Write("\n");		
+				}				
+			} else {				
+				foreach (info_file info in revisions)
+				{
+					//TODO: verificar si se trata de un CREATE, ALTER o DROP
+					Console.Write(info.RealFileName + ";" + "NIY" + ";" + info.UserName + ";" + info.Machine + ";" + tools.ConvertToUnixTimestamp(info.Date) + ";" + info.Revision.ToString() + ";" + info.Message + "\n");
+				}
 			}
-			/*
-			foreach (info_file info in revisions)
+
+			if (!bus_output)
 			{
-				Console.Write("Filename: "); Console.Write(info.RealFileName + "\n");
-				Console.Write("Type: NIY\n");
-				Console.Write("Author: "); Console.Write(info.UserName + " (" + info.Machine + ")\n");
-				Console.Write("Date: "); Console.Write(info.Date.ToLongDateString() + " " + info.Date.ToLongTimeString() + "\n");
-				Console.Write("Revision: "); Console.Write(info.Revision.ToString() + "\n");
-				Console.Write("\n");		
+            	Console.Write("...done\n");
 			}
-			*/
-			Console.Write("\n");	
-            Console.Write("...done\n");
         }
 
 		public static void viewlog()
 		{
-//            filename = file;
-            //filename_sha1 = sha1.GetSHA1(filename.ToLower());
-
-            Console.Write("> Repository revisions log\n");
-            Console.Write("\n"); 
-
+			if (!bus_output) {
+            	Console.Write("> Repository revisions log\n");
+            	Console.Write("\n"); 
+			}
+			
 			// get list of files in repo
-			foreach (string f in System.IO.Directory.GetDirectories(@".dbm/.objs"))
-			{
-				string[] filename_splitted = f.Split('/');
-	            filename = filename_splitted[filename_splitted.Length - 1];
-    	        filename_sha1 = filename;
-				
-				string[] revisionsfile = System.IO.Directory.GetFiles(@".dbm/.info/" + filename_sha1, @"*." + (int.Parse(getlastrevisionfromfile()) - 1));
-				info_file info = getinfofromfile(revisionsfile[0]);
-				Console.Write(info.RealFileName + ";" + "NIY" + ";" + info.UserName + ";" + info.Machine + ";" + tools.ConvertToUnixTimestamp(info.Date) + ";" + info.Revision.ToString() + "\n");
+			if (bus_output) {
+				foreach (string f in System.IO.Directory.GetDirectories(@".dbm/.objs"))
+				{
+					string[] filename_splitted = f.Split('/');
+		            filename = filename_splitted[filename_splitted.Length - 1];
+	    	        filename_sha1 = filename;
+					
+					string[] revisionsfile = System.IO.Directory.GetFiles(@".dbm/.info/" + filename_sha1, @"*." + (int.Parse(getlastrevisionfromfile()) - 1));
+					info_file info = getinfofromfile(revisionsfile[0]);
+					
+					//TODO: verificar si se trata de un CREATE, ALTER o DROP
+					Console.Write(info.RealFileName + ";" + "NIY" + ";" + info.UserName + ";" + info.Machine + ";" + tools.ConvertToUnixTimestamp(info.Date) + ";" + info.Revision.ToString() + ";" + info.Message + "\n");
+				}
+			} else {
+				foreach (string f in System.IO.Directory.GetDirectories(@".dbm/.objs"))
+				{
+					string[] filename_splitted = f.Split('/');
+		            filename = filename_splitted[filename_splitted.Length - 1];
+	    	        filename_sha1 = filename;
+					
+					string[] revisionsfile = System.IO.Directory.GetFiles(@".dbm/.info/" + filename_sha1, @"*." + (int.Parse(getlastrevisionfromfile()) - 1));
+					info_file info = getinfofromfile(revisionsfile[0]);
+					
+					Console.Write("Filename: "); Console.Write(info.RealFileName + "\n");
+					Console.Write("Type: NIY\n");
+					Console.Write("Author: "); Console.Write(info.UserName + " (" + info.Machine + ")\n");
+					Console.Write("Date: "); Console.Write(info.Date.ToLongDateString() + " " + info.Date.ToLongTimeString() + "\n");
+					Console.Write("Revision: "); Console.Write(info.Revision.ToString() + "\n");
+					Console.Write("Message: "); Console.Write(info.Message + "\n");
+					Console.Write("\n");		
+				}
 			}
 			
-			/*
-			foreach (info_file info in revisions)
-			{
-				Console.Write("Filename: "); Console.Write(info.RealFileName + "\n");
-				Console.Write("Type: NIY\n");
-				Console.Write("Author: "); Console.Write(info.UserName + " (" + info.Machine + ")\n");
-				Console.Write("Date: "); Console.Write(info.Date.ToLongDateString() + " " + info.Date.ToLongTimeString() + "\n");
-				Console.Write("Revision: "); Console.Write(info.Revision.ToString() + "\n");
-				Console.Write("\n");		
+			if (!bus_output) {
+
+            	Console.Write("...done\n");			
 			}
-			*/
-			
-			Console.Write("\n");	
-            Console.Write("...done\n");			
 		}
 			
         public static string getlastrevisionfromfile()
